@@ -54,6 +54,9 @@ class LPPLModel:
 
         df = pd.read_csv(data_path)
         df['Date'] = pd.to_datetime(df['Date'])
+        if 'Adj Close' not in df.columns:
+            print("WARNING: Adj Close is not in data frame; use Close as a proxy")
+            df['Adj Close'] = df['Close']
         df['log_px'] = np.log(df['Adj Close'])
         self._data = df.set_index('Date')
 
@@ -262,14 +265,14 @@ class LPPLModel:
             end_dt (pandas.Timestamp): end date of the calibration window.
             peak_dt (pandas.Timestamp): the actual date when asset price peaked.
         """
-        print(f'\t--- fitting model on data from {start_dt} to {end_dt}')
+        print(f'--- fitting model on data from {start_dt} to {end_dt}')
 
         init_guess_file = f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_candidates.csv'
         if os.path.exists(init_guess_file):
-            print(f'\t\tLoading initial guesses of model parameters from {init_guess_file}...')
+            print(f'Loading initial guesses of model parameters from {init_guess_file}...')
             candidates = pd.read_csv(init_guess_file)
         else:
-            print(f'\t\tComputing initial guesses of model parameters and saving them to {init_guess_file}...')
+            print(f'Computing initial guesses of model parameters and saving them to {init_guess_file}...')
             candidates = self._calc_init_candidates(start_dt, end_dt)
 
         # choose the first 10 candidates of parameters by mse_resid
@@ -333,10 +336,10 @@ class LPPLModel:
                                          f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_params.json')
 
         if not os.path.exists(model_params_file):
-            print(f'\tmodel parameters unavailable for the calibration period [{start_dt}, {end_dt}]; calibrating...')
+            print(f'model parameters unavailable in {model_params_file}; calibrating...')
             self.fit(start_dt=start_dt, end_dt=end_dt)
         else:
-            print(f'\tloading model parameters from {model_params_file}...')
+            print(f'loading model parameters from {model_params_file}...')
             with open(model_params_file) as f:
                 model_params = json.load(f)
             self._A = model_params['A']
@@ -363,15 +366,24 @@ class LPPLModel:
 
         plt.figure(figsize=(16,12))
         ax = df[['Adj Close', 'model_px']].plot(style=['-', ':'])
-        plt.vlines(x=[start_dt, end_dt, peak_dt, tc],
+
+        if peak_dt is not None:
+            vlines_x = [start_dt, end_dt, peak_dt, tc]
+            title = f'{self._ticker} calibration period: [{start_dt.strftime("%Y-%m-%d")}, {end_dt.strftime("%Y-%m-%d")}]\n'
+            title = title + f'model peak: {tc.strftime("%Y-%m-%d")}@{round(crash_px,2)} ({self._tc_delta} bds from calibration end)\n'
+            title = title + f'actual peak: {peak_dt.strftime("%Y-%m-%d")}@{round(self._data.loc[peak_dt, "Adj Close"],2)}'
+        else:
+            vlines_x = [start_dt, end_dt, tc]
+            title = f'{self._ticker} calibration period: [{start_dt.strftime("%Y-%m-%d")}, {end_dt.strftime("%Y-%m-%d")}]\n'
+            title = title + f'model peak: {tc.strftime("%Y-%m-%d")}@{round(crash_px, 2)} ({self._tc_delta} bds from calibration end)\n'
+
+        plt.vlines(x=vlines_x,
                    ymin=0,
                    ymax=df['Adj Close'].max(),
                    linestyles=['dashed', 'dashed', 'solid', 'dashed'],
                    colors=['green', 'green', 'red', 'blue'])
         ax.lines[0].set_alpha(0.3)
-        ax.set_title(f'{self._ticker} calibration period: [{start_dt.strftime("%Y-%m-%d")}, {end_dt.strftime("%Y-%m-%d")}]\n'
-                     f'model peak: {tc.strftime("%Y-%m-%d")}@{round(crash_px,2)} ({self._tc_delta} bds from calibration end)\n'
-                     f'actual peak: {peak_dt.strftime("%Y-%m-%d")}@{round(self._data.loc[peak_dt, "Adj Close"],2)}')
+        ax.set_title(title)
 
         # fig = plt.gcf()
         # fig.set_size_inches(12, 9)
