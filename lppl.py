@@ -267,9 +267,10 @@ class LPPLModel:
         """
         print(f'--- fitting model on data from {start_dt} to {end_dt}')
 
-        init_guess_file = f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_candidates.csv'
+        init_guess_file = os.path.join(self._params_dir,
+                                       f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_candidates.csv')
         if os.path.exists(init_guess_file):
-            print(f'Loading initial guesses of model parameters from {init_guess_file}...')
+            print(f'\tLoading initial guesses of model parameters from {init_guess_file}...')
             candidates = pd.read_csv(init_guess_file)
         else:
             print(f'Computing initial guesses of model parameters and saving them to {init_guess_file}...')
@@ -317,11 +318,11 @@ class LPPLModel:
                         'mse_resid': opt_params['mse_resid']
                         }
 
-        with open(os.path.join(self._params_dir,
-                               '{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_params.json', "w")) as outfile:
+        filepath = os.path.join(self._params_dir, f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_params.json')
+        with open(filepath, "w") as outfile:
             json.dump(model_params, outfile)
 
-    def predict(self, start_dt: pd.Timestamp, end_dt: pd.Timestamp, peak_dt: pd.Timestamp) -> None:
+    def predict(self, start_dt: pd.Timestamp, end_dt: pd.Timestamp, peak_dt: pd.Timestamp|None) -> None:
         """ Plot actual and forecasted price trajectories; also do calibration if model parameters (in json) are
         unavailable.
 
@@ -336,10 +337,10 @@ class LPPLModel:
                                          f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_params.json')
 
         if not os.path.exists(model_params_file):
-            print(f'model parameters unavailable in {model_params_file}; calibrating...')
+            print(f'\tmodel parameters unavailable in {model_params_file}; calibrating...')
             self.fit(start_dt=start_dt, end_dt=end_dt)
         else:
-            print(f'loading model parameters from {model_params_file}...')
+            print(f'\tloading model parameters from {model_params_file}...')
             with open(model_params_file) as f:
                 model_params = json.load(f)
             self._A = model_params['A']
@@ -396,6 +397,12 @@ if __name__ == '__main__':
         pd.set_option('display.max_columns', 20)
 
         data_dir = os.path.join(os.getcwd(), 'data')
+
+        model = LPPLModel(data_path=os.path.join(data_dir, 'GLD.csv'))
+
+        model.predict(start_dt=pd.to_datetime('6/1/2023'),
+                      end_dt=pd.to_datetime('4/22/2025'),
+                      peak_dt=None)
 
         model = LPPLModel(data_path=os.path.join(data_dir, 'frc.csv'))
 
