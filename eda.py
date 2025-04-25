@@ -17,7 +17,7 @@ if __name__ == '__main__':
         pd.set_option('display.width', 400)
         pd.set_option('display.max_columns', 20)
 
-        data_dir = os.path.join(os.getcwd(), 'data')
+        data_dir = os.path.join(os.getcwd(), 'data', 'archived')
 
         # load data
 

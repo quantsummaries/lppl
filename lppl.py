@@ -125,7 +125,7 @@ class LPPLModel:
                             candidates.append(params)
 
         candidates = pd.concat(candidates).reset_index()
-        candidates.to_csv(os.path.join(self._output_dir,
+        candidates.to_csv(os.path.join(self._params_dir,
                                        f'{self._ticker}_{start_dt.strftime("%Y%m%d")}_{end_dt.strftime("%Y%m%d")}_candidates.csv'),
                           index=False)
 
@@ -243,7 +243,7 @@ class LPPLModel:
                       beta: float,
                       omega: float,
                       phi: float,
-                      tc: pd.Timestamp) -> np.ndarray:
+                      tc: pd.Timestamp) -> pd.Series:
         """ Assuming model parameters are given, calculate the forecasted trajectory of asset price. """
         cutoff_dt = min(tc, data.index[-1])
         df = data[data.index <= cutoff_dt]
@@ -263,7 +263,6 @@ class LPPLModel:
         Args:
             start_dt (pandas.Timestamp): start date of the calibration window.
             end_dt (pandas.Timestamp): end date of the calibration window.
-            peak_dt (pandas.Timestamp): the actual date when asset price peaked.
         """
         print(f'--- fitting model on data from {start_dt} to {end_dt}')
 
@@ -273,7 +272,7 @@ class LPPLModel:
             print(f'\tLoading initial guesses of model parameters from {init_guess_file}...')
             candidates = pd.read_csv(init_guess_file)
         else:
-            print(f'Computing initial guesses of model parameters and saving them to {init_guess_file}...')
+            print(f'\tComputing initial guesses of model parameters and saving them to {init_guess_file}...')
             candidates = self._calc_init_candidates(start_dt, end_dt)
 
         # choose the first 10 candidates of parameters by mse_resid
@@ -322,14 +321,14 @@ class LPPLModel:
         with open(filepath, "w") as outfile:
             json.dump(model_params, outfile)
 
-    def predict(self, start_dt: pd.Timestamp, end_dt: pd.Timestamp, peak_dt: pd.Timestamp|None) -> None:
+    def predict(self, start_dt: pd.Timestamp, end_dt: pd.Timestamp, peak_dt: pd.Timestamp = None) -> None:
         """ Plot actual and forecasted price trajectories; also do calibration if model parameters (in json) are
         unavailable.
 
         Args:
             start_dt (pandas.Timestamp): start date of the calibration window.
             end_dt (pandas.Timestamp): end date of the calibration window.
-            peak_dt (pandas.Timestamp): the actual date when asset price peaked.
+            peak_dt (pandas.Timestamp): the actual date when asset price peaked. If None, display no actual date in plot.
         """
         print(f'--- predicting based on calibration window [{start_dt}, {end_dt}]')
 
@@ -361,7 +360,7 @@ class LPPLModel:
 
         tc = end_dt + pd.tseries.offsets.BDay(self._tc_delta)
         df['model_px'] = self.calc_model_px(data=df, A=self._A, B=self._B, C=self._C, beta=self._beta,
-                                                omega=self._omega, phi=self._phi, tc=tc)
+                                            omega=self._omega, phi=self._phi, tc=tc)
 
         crash_px = np.exp(self._A)
 
@@ -397,33 +396,36 @@ if __name__ == '__main__':
         pd.set_option('display.max_columns', 20)
 
         data_dir = os.path.join(os.getcwd(), 'data')
+        data_dir_archived = os.path.join(data_dir, 'archived')
+
+        archived_inputs = [{'ticker': 'frc',
+                            'start_dt': pd.to_datetime('3/23/2020'),
+                            'end_dt': pd.to_datetime('10/13/2021'),
+                            'peak_dt': pd.to_datetime('11/16/2021')},
+                           {'ticker': 'tsla',
+                            'start_dt': pd.to_datetime('12/9/2019'),
+                            'end_dt': pd.to_datetime('12/21/2020'),
+                            'peak_dt': pd.to_datetime('1/5/2021')},
+                            {'ticker': 'tsla',
+                             'start_dt': pd.to_datetime('5/17/2021'),
+                             'end_dt': pd.to_datetime('10/4/2021'),
+                             'peak_dt': pd.to_datetime('11/1/2021')},
+                            {'ticker': 'gme',
+                             'start_dt': pd.to_datetime('7/5/2020'),
+                             'end_dt': pd.to_datetime('1/26/2021'),
+                             'peak_dt': pd.to_datetime('1/27/2021')}
+                           ]
+
+        for my_input in archived_inputs:
+            model = LPPLModel(data_path=os.path.join(data_dir_archived, f"""{my_input['ticker']}.csv"""))
+            model.predict(start_dt=my_input['start_dt'], end_dt=my_input['end_dt'], peak_dt=my_input['peak_dt'])
 
         model = LPPLModel(data_path=os.path.join(data_dir, 'GLD.csv'))
 
-        model.predict(start_dt=pd.to_datetime('6/1/2023'),
+        model.predict(start_dt=pd.to_datetime('10/1/2023'),
                       end_dt=pd.to_datetime('4/22/2025'),
                       peak_dt=None)
 
-        model = LPPLModel(data_path=os.path.join(data_dir, 'frc.csv'))
-
-        model.predict(start_dt=pd.to_datetime('3/23/2020'),
-                      end_dt=pd.to_datetime('10/13/2021'),
-                      peak_dt=pd.to_datetime('11/16/2021'))
-
-        model = LPPLModel(data_path=os.path.join(data_dir, 'tsla.csv'))
-
-        model.predict(start_dt=pd.to_datetime('12/9/2019'),
-                      end_dt=pd.to_datetime('12/21/2020'),
-                      peak_dt=pd.to_datetime('1/5/2021'))
-        model.predict(start_dt=pd.to_datetime('5/17/2021'),
-                      end_dt=pd.to_datetime('10/4/2021'),
-                      peak_dt=pd.to_datetime('11/1/2021'))
-
-        model = LPPLModel(data_path=os.path.join(data_dir, 'gme.csv'))
-
-        model.predict(start_dt=pd.to_datetime('7/5/2020'),
-                      end_dt=pd.to_datetime('1/26/2021'),
-                      peak_dt=pd.to_datetime('1/27/2021'))
     except Exception as err:
         print('LPPL run failed: ' + str(err))
         print(traceback.format_exc())
