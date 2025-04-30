@@ -423,7 +423,7 @@ if __name__ == '__main__':
         model = LPPLModel(data_path=os.path.join(data_dir, 'GLD.csv'))
 
         model.predict(start_dt=pd.to_datetime('10/1/2023'),
-                      end_dt=pd.to_datetime('4/22/2025'),
+                      end_dt=pd.to_datetime('4/29/2025'),
                       peak_dt=None)
 
     except Exception as err:
