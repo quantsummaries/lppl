@@ -1,7 +1,9 @@
 beautifulsoup4==4.13.4
 certifi==2025.1.31
+cffi==1.17.1
 charset-normalizer==3.4.1
 contourpy==1.0.7
+curl_cffi==0.10.0
 cycler==0.11.0
 fonttools==4.39.4
 frozendict==2.4.6
@@ -16,6 +18,8 @@ patsy==0.5.3
 peewee==3.17.9
 Pillow==9.5.0
 platformdirs==4.3.7
+protobuf==5.29.4
+pycparser==2.22
 pyparsing==3.0.9
 python-dateutil==2.8.2
 pytz==2023.3
@@ -28,4 +32,5 @@ statsmodels==0.14.0
 typing_extensions==4.13.2
 tzdata==2023.3
 urllib3==2.4.0
-yfinance==0.2.56
+websockets==15.0.1
+yfinance==0.2.59

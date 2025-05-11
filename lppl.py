@@ -365,7 +365,7 @@ class LPPLModel:
         crash_px = np.exp(self._A)
 
         plt.figure(figsize=(16,12))
-        ax = df[['Adj Close', 'model_px']].plot(style=['-', ':'])
+        ax = df[df.index >= start_dt][['Adj Close', 'model_px']].plot(style=['-', ':'])
 
         if peak_dt is not None:
             vlines_x = [start_dt, end_dt, peak_dt, tc]
