@@ -31,9 +31,9 @@ class LPPLModel:
         self._data = None
         self._ticker = data_path.split('\\')[-1].replace('.csv', '').upper()
         self._A = None
-        self._A_range = (0.0, np.PINF)
+        self._A_range = (0.0, np.inf)
         self._B = None
-        self._B_range = (np.NINF, 0.0)
+        self._B_range = (-np.inf, 0.0)
         self._C = None
         self._C_range = (-1.0, 1.0)
         self._beta = None
