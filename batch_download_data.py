@@ -12,14 +12,16 @@ if __name__ == '__main__':
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
 
+        security_list = []
+
+        # current focus
+        security_list += ['GLD', 'NVS']
+
         # basic ETFs
-        security_list = ['SPY', 'VTV', 'VBR', 'VTI', 'VWO', 'BND', 'AGG', 'JNK', 'TIP', 'VNQ', 'GSG', 'DBC']
+        #security_list = ['SPY', 'VTV', 'VBR', 'VTI', 'VWO', 'BND', 'AGG', 'JNK', 'TIP', 'VNQ', 'GSG', 'DBC']
 
         # additional ETF
-        security_list += ['QQQ', 'LQD', 'HYG', 'SOXX', 'SOXL', 'TLT', 'GLD', 'IBIT']
-
-        # additional individual stocks
-        security_list += ['NVS']
+        #security_list += ['QQQ', 'LQD', 'HYG', 'SOXX', 'SOXL', 'TLT', 'GLD', 'IBIT']
 
         period = '20y'
         interval = '1d'
