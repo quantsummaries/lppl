@@ -16,7 +16,10 @@ if __name__ == '__main__':
         security_list = ['SPY', 'VTV', 'VBR', 'VTI', 'VWO', 'BND', 'AGG', 'JNK', 'TIP', 'VNQ', 'GSG', 'DBC']
 
         # additional ETF
-        security_list = security_list + ['QQQ', 'LQD', 'HYG', 'SOXX', 'SOXL', 'TLT', 'GLD', 'IBIT']
+        security_list += ['QQQ', 'LQD', 'HYG', 'SOXX', 'SOXL', 'TLT', 'GLD', 'IBIT']
+
+        # additional individual stocks
+        security_list += ['NVS']
 
         period = '20y'
         interval = '1d'

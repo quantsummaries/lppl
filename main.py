@@ -1,5 +1,6 @@
 import os
 import traceback
+from datetime import date
 
 import pandas as pd
 
@@ -14,11 +15,14 @@ def main():
 
         data_dir = os.path.join(os.getcwd(), 'data')
 
-        model = LPPLModel(data_path=os.path.join(data_dir, 'GLD.csv'))
+        tickers = ['GLD', 'NVS']
+        calib_times = ['11/1/2025', '11/16/2025']
+        for ticker, calib_time in zip(tickers, calib_times):
+            model = LPPLModel(data_path=os.path.join(data_dir, f'{ticker}.csv'))
 
-        model.predict(start_dt=pd.to_datetime('11/1/2025'),
-                      end_dt=pd.to_datetime('1/25/2026'),
-                      peak_dt=None)
+            model.predict(start_dt=pd.to_datetime(calib_time),
+                          end_dt=pd.to_datetime('2/27/2026'),
+                          peak_dt=None)
 
     except Exception as err:
         print('LPPL run failed: ' + str(err))
