@@ -3,5 +3,5 @@
 __pycache__/
 output/
 *.png
-data/
+data/*.csv
 params/

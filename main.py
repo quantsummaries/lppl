@@ -15,13 +15,13 @@ def main():
 
         data_dir = os.path.join(os.getcwd(), 'data')
 
-        tickers = ['GLD', 'NVS']
-        calib_times = ['11/1/2025', '11/16/2025']
+        tickers = ['GLD', 'NVS', 'PLTR']
+        calib_times = ['11/1/2025', '11/16/2025', '2/8/2026']
         for ticker, calib_time in zip(tickers, calib_times):
             model = LPPLModel(data_path=os.path.join(data_dir, f'{ticker}.csv'))
 
             model.predict(start_dt=pd.to_datetime(calib_time),
-                          end_dt=pd.to_datetime('2/27/2026'),
+                          end_dt=pd.to_datetime(date.today()),
                           peak_dt=None)
 
     except Exception as err:

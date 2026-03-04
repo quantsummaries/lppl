@@ -15,7 +15,7 @@ if __name__ == '__main__':
         security_list = []
 
         # current focus
-        security_list += ['GLD', 'NVS']
+        security_list += ['GLD', 'NVS', 'PLTR']
 
         # basic ETFs
         #security_list = ['SPY', 'VTV', 'VBR', 'VTI', 'VWO', 'BND', 'AGG', 'JNK', 'TIP', 'VNQ', 'GSG', 'DBC']
